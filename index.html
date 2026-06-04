@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Delusion</title>
+    <style>
+        body {
+            background: #111;
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 36px;
+            letter-spacing: 2px;
+        }
+        video {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .button-container {
+            margin-top: 20px;
+            display: none;
+            gap: 25px;
+            justify-content: center;
+        }
+        button {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 24px;
+            cursor: pointer;
+            border: none;
+            border-radius: 40px;
+            transition: 0.2s;
+            background-color: #333;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        button:first-child {
+            background-color: #2e7d32;
+        }
+        button:last-child {
+            background-color: #c62828;
+        }
+        button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>🎬 Delusion</h1>
+    <video id="mainVideo" controls autoplay>
+        <source src="Delusion1.mp4" type="video/mp4">
+    </video>
+    <div id="buttonContainer" class="button-container">
+        <button id="btnA"></button>
+        <button id="btnB" style="display:none;"></button>
+    </div>
+
+    <script>
+        const storyMap = {
+            "Delusion1.mp4": {
+                next: "Delusion2.mp4",
+                singleButton: "不要這包粉末"
+            },
+            "Delusion2.mp4": {
+                next: "Delusion3.mp4",
+                singleButton: "三個月後"
+            },
+            "Delusion3.mp4": {
+                next: "Delusion4.mp4",
+                singleButton: "回到過去尋找小文"
+            },
+            "Delusion4.mp4": {
+                nextA: "Delusion5a.mp4",
+                nextB: "Delusion5b.mp4",
+                buttonA: "自行幫助小文",
+                buttonB: "找專業人士幫忙"
+            },
+            "Delusion5a.mp4": {
+                next: "Delusion5b.mp4",
+                singleButton: "找專業人士幫忙"
+            },
+            "Delusion5b.mp4": {
+                next: null,
+                singleButton: null
+            }
+        };
+
+        const video = document.getElementById('mainVideo');
+        const btnContainer = document.getElementById('buttonContainer');
+        const btnA = document.getElementById('btnA');
+        const btnB = document.getElementById('btnB');
+        let currentVideoFile = "Delusion1.mp4";
+
+        function showButtons(config) {
+            if (config.nextA && config.nextB) {
+                btnA.textContent = config.buttonA;
+                btnB.textContent = config.buttonB;
+                btnB.style.display = "inline-block";
+                btnA.onclick = () => switchVideo(config.nextA);
+                btnB.onclick = () => switchVideo(config.nextB);
+                btnContainer.style.display = "flex";
+            } else if (config.singleButton) {
+                btnA.textContent = config.singleButton;
+                btnB.style.display = "none";
+                btnA.onclick = () => switchVideo(config.next);
+                btnContainer.style.display = "flex";
+            } else {
+                btnContainer.style.display = "none";
+            }
+        }
+
+        function switchVideo(nextFile) {
+            if (!nextFile) return;
+            currentVideoFile = nextFile;
+            video.src = nextFile;
+            video.load();
+            video.play();
+            btnContainer.style.display = "none";
+            video.removeEventListener('timeupdate', timeupdateHandler);
+            video.addEventListener('timeupdate', timeupdateHandler);
+        }
+
+        function timeupdateHandler() {
+            const remaining = video.duration - video.currentTime;
+            const config = storyMap[currentVideoFile];
+            if (!config) return;
+            if (remaining <= 10 && remaining > 0 && btnContainer.style.display !== "flex") {
+                if (!config.next && !config.nextA && !config.nextB) return;
+                showButtons(config);
+            }
+        }
+
+        video.addEventListener('timeupdate', timeupdateHandler);
+    </script>
+</body>
+</html>
